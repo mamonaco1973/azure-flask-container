@@ -7,9 +7,9 @@ if [ $? -ne 0 ]; then
 fi
 
 
-# Navigate to the 01-ecr directory
-cd "01-ecr" 
-echo "NOTE: Building ECR Repository."
+# Navigate to the 01-acr directory
+cd "01-acr" 
+echo "NOTE: Building ACR Repository."
 
 if [ ! -d ".terraform" ]; then
     terraform init
@@ -24,28 +24,24 @@ cd ..
 cd "02-docker"
 echo "NOTE: Building flask container with Docker."
 
-# Retrieve the AWS Account ID using the AWS CLI.
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-
-# Authenticate Docker to AWS ECR using the retrieved credentials.
-aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com
-
-# Build and push the Docker image.
-# The image tag includes the AWS Account ID and the specified repository and tag.
-
-docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/flask-app:flask-app-rc1 . --push
+RESOURCE_GROUP="flask-container-rg"
+ACR_NAME=$(az acr list --resource-group $RESOURCE_GROUP --query "[?starts_with(name, 'flaskapp')].name | [0]" --output tsv)
+az acr login --name $ACR_NAME
+ACR_REPOSITORY="${ACR_NAME}.azurecr.io/flask-app"
+IMAGE_TAG="flask-app-rc1"
+docker build -t ${ACR_REPOSITORY}:${IMAGE_TAG} . --push
 
 cd ..
 
 # Navigate to the 03-apprunner directory
-cd 03-apprunner
-echo "NOTE: Building apprunner instance and deploy flask container."
+cd 03-containerapp
+echo "NOTE: Building container app instance and deploy flask container."
 
-if [ ! -d ".terraform" ]; then
-    terraform init
-fi
+#if [ ! -d ".terraform" ]; then
+#    terraform init
+#fi
 
-terraform apply -auto-approve
+#terraform apply -auto-approve
 
 # Return to the parent directory
 cd ..

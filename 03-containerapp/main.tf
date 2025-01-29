@@ -1,7 +1,18 @@
-
-provider "aws" {
-  region = "us-east-2" # Default region set to US East (Ohio). Modify if your deployment requires another region.
+# Configure the AzureRM provider
+provider "azurerm" {
+  # Enables the default features of the provider
+  features {}
 }
 
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+# Data source to fetch details of the primary subscription
+data "azurerm_subscription" "primary" {}
+
+# Data source to fetch the details of the current Azure client
+data "azurerm_client_config" "current" {}
+
+# Resource group for the project
+
+data "azurerm_resource_group" "flask_container_rg" {
+  name = "flask-container-rg"
+}
+

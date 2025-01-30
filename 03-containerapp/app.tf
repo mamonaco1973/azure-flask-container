@@ -4,6 +4,18 @@ resource "azurerm_container_app_environment" "flask_env" {
   location            = data.azurerm_resource_group.flask_container_rg.location
 }
 
+resource "azurerm_user_assigned_identity" "containerapp" {
+  location            = data.azurerm_resource_group.flask_container_rg.location
+  name                = "containerappmi"
+  resource_group_name = data.azurerm_resource_group.flask_container_rg.name
+}
+
+resource "azurerm_role_assignment" "containerapp" {
+  scope                = data.azurerm_container_registry.flask_acr.id
+  role_definition_name = "acrpull"
+  principal_id         = azurerm_user_assigned_identity.containerapp.principal_id
+}
+
 resource "azurerm_container_app" "flask_container_app" {
   name                         = "flask-container-app"
   resource_group_name          = data.azurerm_resource_group.flask_container_rg.name
@@ -12,14 +24,20 @@ resource "azurerm_container_app" "flask_container_app" {
   revision_mode = "Single"
 
   identity {
-    type         = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.containerapp.id]
+  }
+
+  registry {
+    server   = data.azurerm_container_registry.flask_acr.login_server
+    identity = azurerm_user_assigned_identity.containerapp.id
   }
 
   template {
     container {
       name = "flask-app"
-      image  = "nginx"
-      #image  = "${data.azurerm_container_registry.flask_acr.name}.azurecr.io/flask-app:flask-app-rc1"
+      #image  = "nginx"
+      image  = "${data.azurerm_container_registry.flask_acr.name}.azurecr.io/flask-app:flask-app-rc1"
       cpu    = "0.25"
       memory = "0.5Gi"
 
@@ -36,6 +54,11 @@ resource "azurerm_container_app" "flask_container_app" {
       env {
         name  = "COSMOS_CONTAINER_NAME"
         value = "Candidates"
+      }
+
+      env {
+        name  = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.containerapp.client_id
       }
     }
 
@@ -55,12 +78,14 @@ resource "azurerm_container_app" "flask_container_app" {
   }
 }
 
-#Assign the custom Cosmos DB role to the Container App
-
 resource "azurerm_cosmosdb_sql_role_assignment" "app_cosmosdb_role" {
-  principal_id        = azurerm_container_app.flask_container_app.identity[0].principal_id  # Principal ID
-  role_definition_id  = azurerm_cosmosdb_sql_role_definition.custom_cosmos_role.id    # Role definition ID
-  scope               = azurerm_cosmosdb_account.candidate_account.id                 # Scope
-  account_name        = azurerm_cosmosdb_account.candidate_account.name               # Cosmos DB account name
-  resource_group_name = data.azurerm_resource_group.flask_container_rg.name           # Resource group name
+  principal_id        = azurerm_user_assigned_identity.containerapp.principal_id   # Managed Identity of the Container App
+  role_definition_id  = azurerm_cosmosdb_sql_role_definition.custom_cosmos_role.id # Custom Cosmos DB Role Definition
+  scope               = azurerm_cosmosdb_account.candidate_account.id              # Scope (Cosmos DB Account Level)
+  account_name        = azurerm_cosmosdb_account.candidate_account.name            # Cosmos DB Account Name
+  resource_group_name = data.azurerm_resource_group.flask_container_rg.name        # Resource Group Name
+}
+
+output "flask_acr_login_server" {
+  value = data.azurerm_container_registry.flask_acr.login_server
 }

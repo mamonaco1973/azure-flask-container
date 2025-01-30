@@ -35,7 +35,7 @@ cd ..
 
 # Navigate to the 03-apprunner directory
 cd 03-containerapp
-echo "NOTE: Building container app instance and deploy flask container."
+echo "NOTE: Building container app instance."
 
 if [ ! -d ".terraform" ]; then
     terraform init

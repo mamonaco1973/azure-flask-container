@@ -1,11 +1,11 @@
 # Cosmos DB Account Configuration
 resource "azurerm_cosmosdb_account" "candidate_account" {
-  name                = "candidates-${substr(data.azurerm_client_config.current.subscription_id, 0, 8)}" 
+  name = "candidates-${substr(data.azurerm_client_config.current.subscription_id, 0, 8)}"
   # Unique Cosmos DB account name using a substring of the subscription ID
   location            = data.azurerm_resource_group.flask_container_rg.location # Azure region
   resource_group_name = data.azurerm_resource_group.flask_container_rg.name     # Resource group for the Cosmos DB account
-  offer_type          = "Standard"                                 # Pricing tier for the Cosmos DB account
-  kind                = "GlobalDocumentDB"                         # Cosmos DB account type
+  offer_type          = "Standard"                                              # Pricing tier for the Cosmos DB account
+  kind                = "GlobalDocumentDB"                                      # Cosmos DB account type
 
   # Define the consistency policy for the Cosmos DB account
   consistency_policy {
@@ -15,7 +15,7 @@ resource "azurerm_cosmosdb_account" "candidate_account" {
   # Configure geo-replication for high availability
   geo_location {
     location          = data.azurerm_resource_group.flask_container_rg.location # Primary region
-    failover_priority = 0                                          # Highest priority for this region
+    failover_priority = 0                                                       # Highest priority for this region
   }
 
   # Enable serverless mode for the Cosmos DB account
@@ -26,9 +26,9 @@ resource "azurerm_cosmosdb_account" "candidate_account" {
 
 # Cosmos DB SQL Database
 resource "azurerm_cosmosdb_sql_database" "candidate_database" {
-  name                = "CandidateDatabase"                                    # Name of the SQL database
-  resource_group_name = data.azurerm_resource_group.flask_container_rg.name    # Resource group for the database
-  account_name        = azurerm_cosmosdb_account.candidate_account.name        # Parent Cosmos DB account name
+  name                = "CandidateDatabase"                                 # Name of the SQL database
+  resource_group_name = data.azurerm_resource_group.flask_container_rg.name # Resource group for the database
+  account_name        = azurerm_cosmosdb_account.candidate_account.name     # Parent Cosmos DB account name
 }
 
 # Cosmos DB SQL Container Configuration

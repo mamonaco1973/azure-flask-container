@@ -12,6 +12,6 @@ data "azurerm_client_config" "current" {}
 
 # Define a resource group for all resources in this setup
 resource "azurerm_resource_group" "flask_container_rg" {
-  name     = "flask-container-rg"   # Name of the resource group
-  location = "Central US"           # Region where resources will be deployed
+  name     = var.resource_group_name  # Name of the resource group
+  location = "Central US"             # Region where resources will be deployed
 }

@@ -61,4 +61,11 @@ else
   echo "NOTE: Successfully logged into Azure."
 fi
 
+az provider register --namespace Microsoft.App
+
+while [[ "$(az provider show --namespace Microsoft.App --query "registrationState" --output tsv)" != "Registered" ]]; do
+  echo "NOTE: Waiting for Microsoft.App to register..."
+  sleep 10
+done
+echo "NOTE: Microsoft.App is currently registered!"
 

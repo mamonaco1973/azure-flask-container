@@ -1,20 +1,18 @@
 
 #!/bin/bash
 
-# Fetch the default domain of the App Runner service
-#SERVICE_NAME="flask-app-runner"
-#SERVICE_URL=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='$SERVICE_NAME'].ServiceUrl" --output text)
+SERVICE_URL=$(az containerapp show --name flask-container-app --resource-group flask-container-rg --query "properties.configuration.ingress.fqdn" --output tsv)
 
 # Check if the SERVICE_URL is empty
-#if [[ -z "$SERVICE_URL" || "$SERVICE_URL" == "None" ]]; then
-#  echo "ERROR: Default domain for App Runner service '$SERVICE_NAME' could not be retrieved. Please check if the service exists and try again."
-#  exit 1
-#fi
+if [[ -z "$SERVICE_URL" || "$SERVICE_URL" == "None" ]]; then
+  echo "ERROR: Service url for flask-container-app is not found. Please check if the service exists and try again."
+  exit 1
+fi
 
 cd ./02-docker
-#SERVICE_URL="https://$SERVICE_URL"
-#echo "NOTE: Testing the API Gateway Solution."
-#echo "NOTE: URL for API Solution is $SERVICE_URL/gtg?details=true"
-#./test_candidates.py $SERVICE_URL
+SERVICE_URL="https://$SERVICE_URL"
+echo "NOTE: Testing the Azure Container App Solution."
+echo "NOTE: URL for Azure Container App is $SERVICE_URL/gtg?details=true"
+./test_candidates.py $SERVICE_URL
 
 cd ..

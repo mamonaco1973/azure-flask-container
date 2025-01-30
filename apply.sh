@@ -37,11 +37,11 @@ cd ..
 cd 03-containerapp
 echo "NOTE: Building container app instance and deploy flask container."
 
-#if [ ! -d ".terraform" ]; then
-#    terraform init
-#fi
+if [ ! -d ".terraform" ]; then
+    terraform init
+fi
 
-#terraform apply -auto-approve
+terraform apply -auto-approve
 
 # Return to the parent directory
 cd ..

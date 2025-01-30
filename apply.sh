@@ -6,7 +6,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-
 # Navigate to the 01-acr directory
 cd "01-acr" 
 echo "NOTE: Building ACR Repository."
@@ -40,7 +39,6 @@ echo "NOTE: Building container app instance."
 if [ ! -d ".terraform" ]; then
     terraform init
 fi
-
 terraform apply -auto-approve
 
 # Return to the parent directory

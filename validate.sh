@@ -12,17 +12,17 @@ if [[ -z "$SERVICE_URL" || "$SERVICE_URL" == "None" ]]; then
   exit 1
 fi
 
-echo "NOTE: Checking the status of Azure Container App: $CONTAINER_APP"
+# Wait for ingress to be ready
+echo "NOTE: Waiting for the API to be reachable..."
 
 while true; do
-    # Extract the RunningState of the active revision
-    STATUS=$(az containerapp revision list --name "$CONTAINER_APP" --resource-group "$RESOURCE_GROUP" --query "[?properties.active].properties.runningState" --output tsv)
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://$SERVICE_URL/candidate/John%20Smith")
 
-    if [[ -n "$STATUS" && "$STATUS" == "Running" ]]; then
-        echo "NOTE: Container App is now running!"
+    if [[ "$HTTP_STATUS" == "200" ]]; then
+        echo "NOTE: API is now reachable."
         break
     else
-        echo "WARNING: Current state: ${STATUS:-Unknown}. Waiting..."
+        echo "WARNING: API is not yet reachable (HTTP $HTTP_STATUS). Retrying..."
         sleep 30
     fi
 done

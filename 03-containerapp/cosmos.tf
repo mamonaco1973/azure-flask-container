@@ -1,7 +1,12 @@
+resource "random_string" "cosmosdb_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
 # Cosmos DB Account Configuration
 resource "azurerm_cosmosdb_account" "candidate_account" {
-  name = "candidates-${substr(data.azurerm_client_config.current.subscription_id, 0, 8)}"
-  # Unique Cosmos DB account name using a substring of the subscription ID
+  name                = "candidates-${random_string.cosmosdb_suffix.result}"    # Unique cosmosdb name
   location            = data.azurerm_resource_group.flask_container_rg.location # Azure region
   resource_group_name = data.azurerm_resource_group.flask_container_rg.name     # Resource group for the Cosmos DB account
   offer_type          = "Standard"                                              # Pricing tier for the Cosmos DB account

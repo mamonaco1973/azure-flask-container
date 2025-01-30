@@ -86,6 +86,7 @@ resource "azurerm_cosmosdb_sql_role_assignment" "app_cosmosdb_role" {
   resource_group_name = data.azurerm_resource_group.flask_container_rg.name        # Resource Group Name
 }
 
-output "flask_acr_login_server" {
-  value = data.azurerm_container_registry.flask_acr.login_server
+output "flask_container_app_url" {
+  description = "The FQDN of the Azure Container App"
+  value       = "https://${azurerm_container_app.flask_container_app.latest_revision_fqdn}/gtg?details=true"
 }

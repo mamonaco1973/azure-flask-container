@@ -102,7 +102,7 @@ resource "azurerm_container_app" "flask_container_app" {
       liveness_probe {
         path             = "/gtg" # Health check endpoint
         port             = 8000   # The port the container listens on
-        transport        = "http" # HTTP-based health check
+        transport        = "HTTP" # HTTP-based health check
         interval_seconds = 10     # Check every 10 seconds
       }
 
@@ -111,7 +111,7 @@ resource "azurerm_container_app" "flask_container_app" {
       readiness_probe {
         path             = "/gtg" # Same health check endpoint
         port             = 8000   # Same port
-        transport        = "http" # HTTP-based check
+        transport        = "HTTP" # HTTP-based check
         interval_seconds = 5      # Check every 5 seconds to ensure readiness
       }
     }

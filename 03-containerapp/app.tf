@@ -24,9 +24,9 @@ resource "azurerm_user_assigned_identity" "containerapp" {
   resource_group_name = data.azurerm_resource_group.flask_container_rg.name     # Resource group name
 }
 
-# ------------------------------------------
+# -----------------------------------------------------------
 # Role Assignment for Container App to Pull Images from ACR
-# ------------------------------------------
+# -----------------------------------------------------------
 
 # Grants the container app's managed identity permission to pull images from Azure Container Registry.
 

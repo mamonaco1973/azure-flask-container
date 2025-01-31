@@ -1,28 +1,17 @@
-# Generates a random string of 6 lowercase alphanumeric characters.
-# Used to ensure uniqueness in the ACR name.
-resource "random_string" "acr_suffix" {
-  length  = 6     # The length of the generated string (adjust as needed)
-  special = false # No special characters allowed (only alphanumeric)
-  upper   = false # Ensure all characters are lowercase to avoid issues
-}
-
-# Defines an Azure Container Registry (ACR) for storing Docker container images.
+# Creates an Azure Container Registry (ACR) for storing Docker container images.
 resource "azurerm_container_registry" "flask_acr" {
-  # ACR name must be globally unique across all Azure regions.
-  # Uses the generated random suffix to prevent name collisions.
-  name = "flaskapp${random_string.acr_suffix.result}"
+  # Globally unique ACR name, using a subscription ID prefix to avoid conflicts.
+  name = "flaskapp${substr(data.azurerm_client_config.current.subscription_id, 0, 6)}"
 
-  # The Azure Resource Group where the ACR will be deployed.
-  # Must already exist before this deployment.
+  # The Resource Group where the ACR is deployed.
   resource_group_name = azurerm_resource_group.flask_container_rg.name
 
-  # The Azure region where the ACR will be hosted.
-  # Must match the Resource Group's location for consistency.
+  # The region where the ACR is hosted, matching the Resource Group's location.
   location = azurerm_resource_group.flask_container_rg.location
 
-  # Specifies the SKU (pricing tier) for the ACR.
-  # - "Basic" is the cheapest option with limited capabilities.
-  # - "Standard" provides increased storage and replication.
-  # - "Premium" enables geo-replication and advanced security features.
+  # ACR pricing tier options:
+  # - "Basic": Cost-effective, limited features.
+  # - "Standard": More storage, better performance.
+  # - "Premium": Geo-replication, advanced security.
   sku = "Basic"
 }

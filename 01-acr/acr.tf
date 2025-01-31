@@ -14,4 +14,6 @@ resource "azurerm_container_registry" "flask_acr" {
   # - "Standard": More storage, better performance.
   # - "Premium": Geo-replication, advanced security.
   sku = "Basic"
+  
+  admin_enabled       = true   
 }

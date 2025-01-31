@@ -68,7 +68,8 @@ resource "azurerm_container_app" "flask_container_app" {
   template {
     container {
       name   = "flask-app"                                                                            # Container name
-      image  = "${data.azurerm_container_registry.flask_acr.name}.azurecr.io/flask-app:flask-app-rc1" # Image to pull from ACR
+      image  = "${data.azurerm_container_registry.flask_acr.name}.azurecr.io/flask-app:${var.image_version}" 
+                                                                                                      # Image to pull from ACR
       cpu    = "0.25"                                                                                 # CPU allocation (vCPU)
       memory = "0.5Gi"                                                                                # Memory allocation (GiB)
 

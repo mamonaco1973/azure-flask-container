@@ -8,7 +8,7 @@ fi
 
 # Navigate to the 01-acr directory
 cd "01-acr" 
-echo "NOTE: Building ACR Repository."
+echo "NOTE: Building ACR Instance."
 
 if [ ! -d ".terraform" ]; then
     terraform init
@@ -27,7 +27,7 @@ RESOURCE_GROUP="flask-container-rg"
 ACR_NAME=$(az acr list --resource-group $RESOURCE_GROUP --query "[?starts_with(name, 'flaskapp')].name | [0]" --output tsv)
 az acr login --name $ACR_NAME
 ACR_REPOSITORY="${ACR_NAME}.azurecr.io/flask-app"
-IMAGE_TAG="flask-app-rc1"
+IMAGE_TAG="rc1"
 docker build -t ${ACR_REPOSITORY}:${IMAGE_TAG} . --push
 
 cd ..

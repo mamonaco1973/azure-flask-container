@@ -52,7 +52,7 @@ jobs:
         run: |
           cd "02-docker"
           echo "NOTE: Building flask container with Docker."
-
+          az login --service-principal --username "$ARM_CLIENT_ID" --password "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID" > /dev/null 2>&1
           RESOURCE_GROUP="flask-container-rg"
           ACR_NAME=$(az acr list --resource-group $RESOURCE_GROUP --query "[?starts_with(name, 'flaskapp')].name | [0]" --output tsv)
           az acr login --name $ACR_NAME

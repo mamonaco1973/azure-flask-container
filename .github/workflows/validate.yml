@@ -1,47 +1,56 @@
-name: Validate Solution  # Name of the workflow for easier identification in GitHub Actions.
+name: Validate Solution
 
 on:
-  workflow_dispatch:  # This allows the workflow to be manually triggered from the GitHub Actions UI.
+  workflow_dispatch:
 
 env:
-    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Fetch AWS access key ID from GitHub Secrets.
-    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Fetch AWS secret access key from GitHub Secrets.
-    AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}  # Fetch the AWS region from GitHub Secrets.
+    ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+    ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
 jobs:
-  validate:  # Define a job named 'validate'
-    name: Validates Solution  # Human-readable name for the job.
-    runs-on: ubuntu-latest  # Specifies that the job runs on the latest Ubuntu runner provided by GitHub.
+  validate:
+    name: Validates Solution
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code  # Step to checkout the repository code onto the runner.
-        uses: actions/checkout@v3  # Uses the 'checkout' action to pull the latest code from the repository.
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Validate Solution  # Step to validate the deployed App Runner solution.
+      - name: Validate Solution
         run: |
-            # Define the name of the App Runner service we are validating.
-            SERVICE_NAME="flask-app-runner"
+          az login --service-principal --username "$ARM_CLIENT_ID" --password "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID" > /dev/null 2>&1
+          CONTAINER_APP="flask-container-app"
+          RESOURCE_GROUP="flask-container-rg"
 
-            # Use AWS CLI to fetch the default domain of the App Runner service.
-            SERVICE_URL=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='$SERVICE_NAME'].ServiceUrl" --output text)
+          # Get the service URL
+          SERVICE_URL=$(az containerapp show --name "$CONTAINER_APP" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
 
-            # If the service URL is empty or not found, print an error message and exit.
-            if [[ -z "$SERVICE_URL" || "$SERVICE_URL" == "None" ]]; then
-                echo "ERROR: Default domain for App Runner service '$SERVICE_NAME' could not be retrieved. Please check if the service exists and try again."
-                exit 1  # Exit the script with an error code to fail the workflow.
+          # Check if the SERVICE_URL is empty
+          if [[ -z "$SERVICE_URL" || "$SERVICE_URL" == "None" ]]; then
+              echo "ERROR: Service URL for $CONTAINER_APP is not found. Please check if the service exists and try again."
+              exit 1
+          fi
+
+          # Wait for ingress to be ready
+          echo "NOTE: Waiting for the API to be reachable..."
+
+          while true; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://$SERVICE_URL/candidate/John%20Smith")
+
+            if [[ "$HTTP_STATUS" == "200" ]]; then
+                echo "NOTE: API is now reachable."
+                break
+            else
+                echo "WARNING: API is not yet reachable (HTTP $HTTP_STATUS). Retrying..."
+                sleep 30
             fi
+          done
 
-            # Change directory to '02-docker' where the validation script is located.
-            cd ./02-docker
-
-            # Prepend 'https://' to the retrieved service URL for proper API testing.
-            SERVICE_URL="https://$SERVICE_URL"
-
-            # Print a note to indicate that the App Runner solution is being tested.
-            echo "NOTE: Testing the App Runner Solution."
-
-            # Display the full URL being tested, including the /gtg endpoint with details enabled.
-            echo "NOTE: URL for App Runner Solution is $SERVICE_URL/gtg?details=true"
-
-            # Execute the test script, passing in the service URL as an argument.
-            ./test_candidates.py $SERVICE_URL
+          # Move to the directory and run the test script
+          cd ./02-docker
+          SERVICE_URL="https://$SERVICE_URL"
+          echo "NOTE: Testing the Azure Container App Solution."        
+          echo "NOTE: URL for Azure Container App is $SERVICE_URL/gtg?details=true"
+          ./test_candidates.py "$SERVICE_URL"

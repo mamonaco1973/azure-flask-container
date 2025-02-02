@@ -81,9 +81,9 @@ fi
 ROLE_CHECK=$(az role assignment list --assignee "$ASSIGNEE" --query "[?roleDefinitionName=='User Access Administrator']" -o tsv)
 
 if [ -z "$ROLE_CHECK" ]; then
-    echo "Error: 'User Access Administrator' role is NOT assigned to $ASSIGNEE."
+    echo "ERROR: 'User Access Administrator' role is NOT assigned to current service principal."
     exit 1
 else
-    echo "'User Access Administrator' role is assigned to $ASSIGNEE."
+    echo "NOTE: 'User Access Administrator' role is assigned to current service principal."
 fi
 

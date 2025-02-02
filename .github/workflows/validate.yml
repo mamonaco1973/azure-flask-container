@@ -11,7 +11,7 @@ env:
 
 jobs:
   validate:
-    name: Validates Solution
+    name: Validate Solution
     runs-on: ubuntu-latest
 
     steps:

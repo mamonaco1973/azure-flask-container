@@ -69,3 +69,21 @@ while [[ "$(az provider show --namespace Microsoft.App --query "registrationStat
 done
 echo "NOTE: Microsoft.App is currently registered!"
 
+# Get the current user or service principal
+ASSIGNEE=$(az account show --query user.name -o tsv)
+
+if [ -z "$ASSIGNEE" ]; then
+    echo "Error: Unable to retrieve the logged-in user or service principal."
+    exit 1
+fi
+
+# Check for the 'User Access Administrator' role
+ROLE_CHECK=$(az role assignment list --assignee "$ASSIGNEE" --query "[?roleDefinitionName=='User Access Administrator']" -o tsv)
+
+if [ -z "$ROLE_CHECK" ]; then
+    echo "Error: 'User Access Administrator' role is NOT assigned to $ASSIGNEE."
+    exit 1
+else
+    echo "'User Access Administrator' role is assigned to $ASSIGNEE."
+fi
+

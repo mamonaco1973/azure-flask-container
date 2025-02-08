@@ -4,10 +4,10 @@ Welcome to **Video 2** of the [Simple Containers Series](https://www.youtube.com
 
 ### In This Video, We'll:
 
+- Use **Azure Cosmos DB** for persistent data storage
 - **Containerize** the Python microservice using **Docker**  
 - **Push** the container image to **Azure Container Registry (ACR)**  
 - **Deploy** the container as an **Azure Container App**  
-- Use **Azure Cosmos DB** for persistent data storage
 
 ## Azure Container Registry: Simplifying Container Image Management
 
